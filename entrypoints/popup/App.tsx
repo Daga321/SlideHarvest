@@ -1,32 +1,31 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import SlidesCard from '../../src/componets/SlidesCard';
 import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0);
+  // Static array of presentation URLs for testing
+  const iframeUrls = [
+    'https://www.canva.com/design/DADj-4dm8eI/lqfBhzaWxbygT5b4HvZPGQ/view?embed',
+    'https://docs.google.com/presentation/d/e/2PACX-1vS…AQpF/pubembed?start=false&loop=false&delayms=3000',
+    'https://prezi.com/p/embed/rs98JJUxsiQMfymi7vNH/',
+    'https://1drv.ms/p/c/0ee12c5ec48ae9c4/IQQuftt30hz4T…cbQYPNk?em=2&wdAr=1.7777777777777777&wdEaaCheck=0'
+  ];
 
   return (
-    <>
-      <div>
-        <a href="https://wxt.dev" target="_blank">
-          <img src='/assets/wxt.svg' className="logo" alt="WXT logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src='/assets/react.svg' className="logo react" alt="React logo" />
-        </a>
+    <div className="app">
+      <h1>Welcome to SlideHarvest</h1>
+      <div className="slides-list">
+        {iframeUrls.length === 0 && <div>No presentations found on this page.</div>}
+        {iframeUrls.map((url, idx) => (
+          <SlidesCard
+            key={idx}
+            title={`Presentation #${idx + 1}`}
+            description={url}
+            link={url}
+          />
+        ))}
       </div>
-      <h1>WXT + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the WXT and React logos to learn more
-      </p>
-    </>
+    </div>
   );
 }
 

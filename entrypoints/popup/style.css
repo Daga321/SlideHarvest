@@ -1,26 +1,64 @@
+/* Selección de texto personalizada */
+::selection {
+  background: var(--color-yellow);
+  color: var(--color-blue);
+}
+::-moz-selection {
+  background: var(--color-yellow);
+  color: var(--color-blue);
+}
 :root {
+  --color-pdf: #d32f2f;
+  /* Card and spinner colors */
+  --color-card-bg: #fff;
+  --color-card-shadow: rgba(67,146,225,0.08);
+  --color-card-shadow-hover: rgba(67,146,225,0.18);
+  --color-card-preview-bg: #f6f8fa;
+  --color-spinner-bg: #f6f8fa;
+  --color-spinner-border: #bdbdbd;
+  --color-spinner-top: #4392e1;
+  --color-error: #d32f2f;
+  --color-title: #213547;
+  /* 🎨 Main palette */
+  --color-blue: #4392e1;
+  --color-yellow: #fdde47;
+  --color-white: #ffffff;
+  --color-light-gray: #bdbdbd;
+
+  /* 🔖 Brand colors for slide sources */
+  --color-canva: #00c4cc;
+  --color-google: #4285f4;
+  --color-prezi: #3181ff;
+  --color-onedrive: #094ab2;
+  --color-otro: #bdbdbd;
+
+  /* 🎯 Text and background colors */
+  --color-text: #213547;
+  --color-bg: var(--color-white);
+
+  /* ⚙️ Typography */
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
+  /* Visual adjustments */
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+
+  color: var(--color-text);
+  background-color: var(--color-bg);
 }
 
 a {
   font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+  color: var(--color-blue);
+  text-decoration: none;
 }
 a:hover {
-  color: #535bf2;
+  text-decoration: underline;
 }
 
 body {
@@ -29,6 +67,8 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background-color: var(--color-bg);
+  color: var(--color-text);
 }
 
 h1 {
@@ -43,27 +83,17 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: var(--color-blue);
+  color: var(--color-white);
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: border-color 0.25s, background-color 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: var(--color-yellow);
+  background-color: var(--color-yellow);
+  color: var(--color-text-dark);
 }
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+  outline: 4px auto var(--color-blue);
 }
