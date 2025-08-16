@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SlidesCardProps } from "../../Types/SlidesCardProps";
 import "./SlidesCard.css";
 
@@ -17,52 +17,67 @@ const SlidesCard: React.FC<SlidesCardProps> = ({ title, link }) => {
   const [error, setError] = useState(false);
   const source = getSlideSource(link);
 
-  // Asignar clase de color según la fuente
-  const sourceClass = `slides-card__source slides-card__source--${source.replace(/\s+/g, '').toLowerCase()}`;
+  // Assign color class by source
+  const sourceClass = `slides-card__source-label slides-card__source-label--${source.replace(/\s+/g, '').toLowerCase()}`;
 
   return (
     <div className="slides-card">
-      <div className="slides-card__preview">
-        {loading && !error && (
-          <div className="slides-card__spinner">
-            <div className="spinner"></div>
+      <div className="slides-card__content">
+        <div className="slides-card__title-row">
+          <h3 className="slides-card__title">{title}</h3>
+          <span className={sourceClass}>{source}</span>
+        </div>
+      </div>
+      <div className="slides-card__preview-container">
+        <div
+          className="slides-card__preview"
+          tabIndex={0}
+        >
+          {loading && !error && (
+            <div className="slides-card__spinner">
+              <div className="spinner"></div>
+            </div>
+          )}
+          {error && (
+            <div className="slides-card__error">Preview could not be loaded.</div>
+          )}
+          <iframe
+            src={link}
+            title={title}
+            className="slides-card__iframe"
+            onLoad={() => {
+              console.log("iframe loaded:", link);
+              setLoading(false);
+            }}
+            onError={() => { setLoading(false); setError(true); }}
+            loading="lazy"
+            allowFullScreen
+          ></iframe>
+          {/* Overlay for focus/see action */}
+          <div className="slides-card__iframe-overlay">
+            <span className="slides-card__eye-icon" title="Focus/See">
+              {/* SVG eye icon */}
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" /><circle cx="12" cy="12" r="3" /></svg>
+            </span>
           </div>
-        )}
-        {error && (
-          <div className="slides-card__error">Preview could not be loaded.</div>
-        )}
-        <iframe
-          src={link}
-          title={title}
-          className="slides-card__iframe"
-          style={{ display: loading || error ? "none" : "block" }}
-          onLoad={() => setLoading(false)}
-          onError={() => { setLoading(false); setError(true); }}
-          loading="lazy"
-          allowFullScreen
-        ></iframe>
+        </div>
       </div>
       <div className="slides-card__content">
-        <h3 className="slides-card__title">{title}</h3>
-        <div className="slides-card__meta">
-          <span className={sourceClass}>{source}</span>
-          <button
-            className="slides-card__focus-btn"
-            // TODO: Define logic in content script to focus the corresponding iframe
-            onClick={() => {/* ToDo: Scroll to iframe in page */}}
-          >
-            Focus
-          </button>
-          <button
-            className="slides-card__download-btn"
-            // TODO: Define logic to download PDF
-            onClick={() => {/* ToDo: Download PDF */}}
-          >
-            Download PDF
-          </button>
-        </div>
+        <button
+          className="slides-card__download-btn"
+          // TODO: Define logic to download PDF
+          onClick={() => {/* ToDo: Download PDF */ }}
+        >
+          Download PDF
+        </button>
         <a href={link} target="_blank" rel="noopener noreferrer" className="slides-card__external-link">
           View presentation
+          <span style={{ display: 'inline-block', verticalAlign: 'middle', marginLeft: '0.35em' }}>
+            {/* External link icon */}
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M7 17L17 7M17 7V17M17 7H7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
         </a>
       </div>
     </div>

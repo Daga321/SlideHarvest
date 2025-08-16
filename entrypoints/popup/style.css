@@ -1,3 +1,26 @@
+/* Modern scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
+  background: var(--color-light-gray);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #e0e0e0;
+  border-radius: 8px;
+  border: 2px solid var(--color-light-gray);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #bdbdbd;
+}
+::-webkit-scrollbar-corner {
+  background: var(--color-light-gray);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #e0e0e0 var(--color-light-gray);
+}
 /* Selección de texto personalizada */
 ::selection {
   background: var(--color-yellow);
