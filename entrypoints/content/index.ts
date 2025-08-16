@@ -15,7 +15,10 @@ export default defineContentScript({
     // Function to send the current presentation iframes
     const sendPresentationIframes = () => {
       const urls = getPresentationIframes();
-      window.postMessage({ type: 'PRESENTATION_IFRAMES', payload: urls }, '*');
+      browser.runtime.sendMessage({
+        type: "PRESENTATION_IFRAMES",
+        payload: urls,
+      });
     };
 
     // Initial send
@@ -29,6 +32,17 @@ export default defineContentScript({
       subtree: true,
       attributes: true,
       characterData: false,
+    });
+
+    // Listen for messages to request iframes
+    browser.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+      if (msg.type === "REQUEST_PRESENTATION_IFRAMES") {
+        const urls = getPresentationIframes();
+        browser.runtime.sendMessage({
+          type: "PRESENTATION_IFRAMES",
+          payload: urls,
+        });
+      }
     });
 
   },

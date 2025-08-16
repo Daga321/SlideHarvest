@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { SlidesCardProps } from "../../Types/SlidesCardProps";
+import { SlidesCardProps } from "../../../Types/SlidesCardProps";
 import "./SlidesCard.css";
+import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
 
 // Helper to detect slide source
 function getSlideSource(url: string): string {
@@ -34,9 +35,7 @@ const SlidesCard: React.FC<SlidesCardProps> = ({ title, link }) => {
           tabIndex={0}
         >
           {loading && !error && (
-            <div className="slides-card__spinner">
-              <div className="spinner"></div>
-            </div>
+            <LoadingSpinner/>
           )}
           {error && (
             <div className="slides-card__error">Preview could not be loaded.</div>
