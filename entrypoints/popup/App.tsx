@@ -2,33 +2,25 @@ import { useEffect, useState } from 'react';
 import SlidesCard from '../../src/componets/SlidesCard/SlidesCard';
 import './App.css';
 import LoadingSpinner from '../../src/componets/LoadingSpinner/LoadingSpinner';
-// Message to request the iframes list
-const REQUEST_IFRAMES = "REQUEST_PRESENTATION_IFRAMES";
+import { sendMessageToActiveTab, listen } from '../../src/utils/Messaging';
+import { Message, MessageType } from '../../Types/Utils/Messages';
 
-function App() {
-
+export default function App() {
+  // useState declarations
   const [iframeUrls, setIframeUrls] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // useEffect for message listening
   useEffect(() => {
-    const listener = (msg: any, sender: any) => {
-      if (msg.type === "PRESENTATION_IFRAMES") {
-        setIframeUrls(msg.payload);
-        setLoading(false);
-      }
-    };
-
-    browser.runtime.onMessage.addListener(listener);
-
-    // Request iframes list when opening the popup
-    browser.tabs && browser.tabs.query({ active: true, currentWindow: true }).then((tabs: any) => {
-      if (tabs[0]?.id) {
-        browser.tabs.sendMessage(tabs[0].id, { type: REQUEST_IFRAMES });
-      }
-    }).catch(() => { setLoading(false); });
-    return () => {
-      browser.runtime.onMessage.removeListener(listener);
-    };
+    const removeListener = listen<string[]>((message: Message<string[]>) => {
+      handleMessage(message, setIframeUrls, setLoading);
+    });
+    
+    sendMessageToActiveTab({
+      type: MessageType.REQUEST_PRESENTATION_IFRAMES
+    });
+    
+    return removeListener;
   }, []);
 
   return (
@@ -57,4 +49,14 @@ function App() {
   );
 }
 
-export default App;
+// Callback functions and auxiliary functions below App
+const handleMessage = (
+  message: Message<string[]>, 
+  setIframeUrls: React.Dispatch<React.SetStateAction<string[]>>,
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>
+) => {
+  if (message.type === MessageType.PRESENTATION_IFRAMES) {
+    setIframeUrls(message.payload || []);
+    setLoading(false);
+  }
+};

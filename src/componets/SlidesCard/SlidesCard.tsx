@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { SlidesCardProps } from "../../../Types/SlidesCardProps";
+import { SlidesCardProps } from "../../../Types/componets/SlidesCardProps";
 import "./SlidesCard.css";
 import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
 
@@ -45,7 +45,6 @@ const SlidesCard: React.FC<SlidesCardProps> = ({ title, link }) => {
             title={title}
             className="slides-card__iframe"
             onLoad={() => {
-              console.log("iframe loaded:", link);
               setLoading(false);
             }}
             onError={() => { setLoading(false); setError(true); }}

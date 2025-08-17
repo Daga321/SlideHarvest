@@ -1,22 +1,17 @@
 import { getPresentationIframes } from './fetchIframe';
+import { debounce } from '../../src/utils/Debounce';
+import { sendMessage, listen } from '../../src/utils/Messaging';
+import { MessageType, Message } from '../../Types/Utils/Messages';
+
 // @ts-ignore
 export default defineContentScript({
   matches: ["*://*/*", "file://*/*"],
   main() {
-    // Helper debounce function
-    function debounce<T extends (...args: any[]) => void>(fn: T, delay: number): T {
-      let timer: ReturnType<typeof setTimeout> | null = null;
-      return function(this: any, ...args: any[]) {
-        if (timer) clearTimeout(timer);
-        timer = setTimeout(() => fn.apply(this, args), delay);
-      } as T;
-    }
-
     // Function to send the current presentation iframes
     const sendPresentationIframes = () => {
       const urls = getPresentationIframes();
-      browser.runtime.sendMessage({
-        type: "PRESENTATION_IFRAMES",
+      sendMessage({
+        type: MessageType.PRESENTATION_IFRAMES,
         payload: urls,
       });
     };
@@ -35,15 +30,19 @@ export default defineContentScript({
     });
 
     // Listen for messages to request iframes
-    browser.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-      if (msg.type === "REQUEST_PRESENTATION_IFRAMES") {
-        const urls = getPresentationIframes();
-        browser.runtime.sendMessage({
-          type: "PRESENTATION_IFRAMES",
-          payload: urls,
-        });
+    const removeListener = listen<void>((msg: Message, sender) => {
+      console.log('Content script received message:', msg);
+      if (msg.type === MessageType.REQUEST_PRESENTATION_IFRAMES) {
+        console.log('Content script processing REQUEST_PRESENTATION_IFRAMES');
+        sendPresentationIframes();
       }
     });
+
+    // Cleanup function (optional, for when the content script is deactivated)
+    return () => {
+      observer.disconnect();
+      removeListener();
+    };
 
   },
 });

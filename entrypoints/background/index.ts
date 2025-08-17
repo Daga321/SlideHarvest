@@ -3,5 +3,5 @@ import { hello } from "./Hello";
 
 // @ts-ignore
 export default defineBackground(() => {
-  hello(); // Llama aquí al módulo Hello
+  hello(); // Call the Hello module here
 });
