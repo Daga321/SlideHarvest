@@ -1,0 +1,93 @@
+@import '../../src/styles/variables.css';
+
+/* Modern scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
+  background: var(--color-light-gray);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #e0e0e0;
+  border-radius: 8px;
+  border: 2px solid var(--color-light-gray);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #bdbdbd;
+}
+::-webkit-scrollbar-corner {
+  background: var(--color-light-gray);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #e0e0e0 var(--color-light-gray);
+}
+
+/* Selección de texto personalizada */
+::selection {
+  background: var(--color-yellow);
+  color: var(--color-blue);
+}
+
+::-moz-selection {
+  background: var(--color-yellow);
+  color: var(--color-blue);
+}
+
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  padding-top: 0px;
+  text-align: center;
+}
+
+a {
+  font-weight: 500;
+  color: var(--color-blue);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: var(--color-blue);
+  color: var(--color-white);
+  cursor: pointer;
+  transition: border-color 0.25s, background-color 0.25s;
+}
+
+button:hover {
+  border-color: var(--color-yellow);
+  background-color: var(--color-yellow);
+  color: var(--color-text-dark);
+}
+
+button:focus,
+button:focus-visible {
+  outline: 4px auto var(--color-blue);
+}

@@ -1,0 +1,34 @@
+/* Centralized CSS variables for SlideHarvest */
+:root {
+  --color-pdf: #d32f2f;
+  --color-card-bg: #fff;
+  --color-card-shadow: rgba(67,146,225,0.08);
+  --color-card-shadow-hover: rgba(67,146,225,0.18);
+  --color-card-preview-bg: #f6f8fa;
+  --color-spinner-bg: #f6f8fa;
+  --color-spinner-border: #bdbdbd;
+  --color-spinner-top: #4392e1;
+  --color-error: #d32f2f;
+  --color-title: #213547;
+  --color-blue: #4392e1;
+  --color-yellow: #fdde47;
+  --color-white: #ffffff;
+  --color-light-gray: #bdbdbd;
+  --color-canva: #00c4cc;
+  --color-google: #4285f4;
+  --color-prezi: #3181ff;
+  --color-onedrive: #094ab2;
+  --color-otro: #bdbdbd;
+  --color-text: #213547;
+  --color-bg: var(--color-white);
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+}
