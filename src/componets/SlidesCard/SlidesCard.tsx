@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { SlidesCardProps } from "../../../Types/componets/SlidesCardProps";
 import "./SlidesCard.css";
 import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
+import { sendMessageToActiveTab } from "../../utils/Messaging";
+import { MessageType } from "../../../Types/Utils/Messages";
 
 // Helper to detect slide source
 function getSlideSource(url: string): string {
@@ -13,7 +15,7 @@ function getSlideSource(url: string): string {
 }
 
 
-export default function SlidesCard({ title, link }: SlidesCardProps) {
+export default function SlidesCard({ id, title, link }: SlidesCardProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const source = getSlideSource(link);
@@ -24,11 +26,13 @@ export default function SlidesCard({ title, link }: SlidesCardProps) {
   return (
     <div className="slides-card">
       <div className="slides-card__content">
+        {/* Header  */}
         <div className="slides-card__title-row">
           <h3 className="slides-card__title">{title}</h3>
           <span className={sourceClass}>{source}</span>
         </div>
       </div>
+      {/* Iframe */}
       <div className="slides-card__preview-container">
         <div
           className="slides-card__preview"
@@ -52,7 +56,7 @@ export default function SlidesCard({ title, link }: SlidesCardProps) {
             allowFullScreen
           ></iframe>
           {/* Overlay for focus/see action */}
-          <div className="slides-card__iframe-overlay">
+          <div className="slides-card__iframe-overlay" onClick={() => focusIframe(id)}>
             <span className="slides-card__eye-icon" title="Focus/See">
               {/* SVG eye icon */}
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" /><circle cx="12" cy="12" r="3" /></svg>
@@ -60,11 +64,11 @@ export default function SlidesCard({ title, link }: SlidesCardProps) {
           </div>
         </div>
       </div>
+      {/* Bottom buttons */}
       <div className="slides-card__content">
         <button
           className="slides-card__download-btn"
-          // TODO: Define logic to download PDF
-          onClick={() => {/* ToDo: Download PDF */ }}
+          onClick={downloadPDF}
         >
           Download PDF
         </button>
@@ -82,3 +86,13 @@ export default function SlidesCard({ title, link }: SlidesCardProps) {
   );
 };
 
+function focusIframe(id: string){
+  sendMessageToActiveTab({
+    type: MessageType.FOCUS_IFRAMES,
+    payload: id 
+  });
+}
+
+function downloadPDF() {
+  // TODO: Implement PDF download logic
+}

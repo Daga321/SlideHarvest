@@ -1,4 +1,5 @@
 import { getPresentationIframes } from './fetchIframe';
+import { focusIframe } from './focusIframe';
 import { debounce } from '../../src/utils/Debounce';
 import { sendMessage, listen } from '../../src/utils/Messaging';
 import { MessageType, Message } from '../../Types/Utils/Messages';
@@ -9,10 +10,10 @@ export default defineContentScript({
   main() {
     // Function to send the current presentation iframes
     const sendPresentationIframes = () => {
-      const urls = getPresentationIframes();
+      const iframesData = getPresentationIframes();
       sendMessage({
         type: MessageType.PRESENTATION_IFRAMES,
-        payload: urls,
+        payload: iframesData,
       });
     };
 
@@ -30,18 +31,24 @@ export default defineContentScript({
     });
 
     // Listen for messages to request iframes
-    const removeListener = listen<void>((msg: Message, sender) => {
-      console.log('Content script received message:', msg);
+    const removerRequestIframesListener = listen<void>((msg: Message, sender) => {
       if (msg.type === MessageType.REQUEST_PRESENTATION_IFRAMES) {
-        console.log('Content script processing REQUEST_PRESENTATION_IFRAMES');
         sendPresentationIframes();
+      }
+    });
+
+    // Listen for focus iframes request
+    const removeFocusIframeListener = listen<void>((msg: Message, sender) => {
+      if (msg.type === MessageType.FOCUS_IFRAMES) {
+        focusIframe(msg.payload);
       }
     });
 
     // Cleanup function (optional, for when the content script is deactivated)
     return () => {
       observer.disconnect();
-      removeListener();
+      removerRequestIframesListener();
+      removeFocusIframeListener()
     };
 
   },

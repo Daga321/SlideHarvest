@@ -7,12 +7,12 @@ import { Message, MessageType } from '../../Types/Utils/Messages';
 
 export default function App() {
   // useState declarations
-  const [iframeUrls, setIframeUrls] = useState<string[]>([]);
+  const [iframeUrls, setIframeUrls] = useState<string[][]>([]);
   const [loading, setLoading] = useState(true);
 
   // useEffect for message listening
   useEffect(() => {
-    const removeListener = listen<string[]>((message: Message<string[]>) => {
+    const removeListener = listen<string[][]>((message: Message<string[][]>) => {
       handleMessage(message, setIframeUrls, setLoading);
     });
     
@@ -36,9 +36,10 @@ export default function App() {
           iframeUrls.length === 0 ? (
             <div>No presentations found on this page.</div>
           ) : (
-            iframeUrls.map((url, idx) => (
+            iframeUrls.map(([id, url], idx) => (
               <SlidesCard
                 key={idx}
+                id={id}
                 title={`Presentation #${idx + 1}`}
                 link={url}
               />
@@ -52,8 +53,8 @@ export default function App() {
 
 // Callback functions and auxiliary functions below App
 const handleMessage = (
-  message: Message<string[]>, 
-  setIframeUrls: React.Dispatch<React.SetStateAction<string[]>>,
+  message: Message<string[][]>, 
+  setIframeUrls: React.Dispatch<React.SetStateAction<string[][]>>,
   setLoading: React.Dispatch<React.SetStateAction<boolean>>
 ) => {
   if (message.type === MessageType.PRESENTATION_IFRAMES) {
