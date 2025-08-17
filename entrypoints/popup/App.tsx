@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import SlidesCard from '../../src/componets/SlidesCard/SlidesCard';
+import SlidesCard from '../../src/components/SlidesCard/SlidesCard';
 import './App.css';
-import LoadingSpinner from '../../src/componets/LoadingSpinner/LoadingSpinner';
+import LoadingSpinner from '../../src/components/LoadingSpinner/LoadingSpinner';
 import { sendMessageToActiveTab, listen } from '../../src/utils/Messaging';
 import { Message, MessageType } from '../../Types/Utils/Messages';
 

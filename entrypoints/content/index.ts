@@ -57,7 +57,7 @@ export default defineContentScript({
     return () => {
       observer.disconnect();
       removerRequestIframesListener();
-      removeFocusIframeListener()
+      removeFocusIframeListener();
     };
 
   },
