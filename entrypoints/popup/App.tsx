@@ -19,8 +19,10 @@ export default function App() {
     sendMessageToActiveTab({
       type: MessageType.REQUEST_PRESENTATION_IFRAMES
     });
-    
-    return removeListener;
+
+    return () => {
+      removeListener();
+    };
   }, []);
 
   return (
@@ -38,7 +40,6 @@ export default function App() {
               <SlidesCard
                 key={idx}
                 title={`Presentation #${idx + 1}`}
-                description={url}
                 link={url}
               />
             ))

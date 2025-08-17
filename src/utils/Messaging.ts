@@ -8,7 +8,6 @@ const browserAPI = globalThis.browser || (globalThis as any).chrome;
  * @param message - The message to send
  */
 export function sendMessage<T>(message: Message<T>): void {
-  console.log('Sending message:', message);
   if (browserAPI?.runtime?.sendMessage) {
     browserAPI.runtime.sendMessage(message).catch((error: Error) => {
       console.warn('Error sending message:', error);
@@ -23,7 +22,6 @@ export function sendMessage<T>(message: Message<T>): void {
  * @param message - The message to send
  */
 export function sendMessageToActiveTab<T>(message: Message<T>): void {
-  console.log('Sending message to active tab:', message);
   if (browserAPI?.tabs) {
     browserAPI.tabs.query({ active: true, currentWindow: true })
       .then((tabs: any) => {

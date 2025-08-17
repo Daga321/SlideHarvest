@@ -13,7 +13,7 @@ function getSlideSource(url: string): string {
 }
 
 
-const SlidesCard: React.FC<SlidesCardProps> = ({ title, link }) => {
+export default function SlidesCard({ title, link }: SlidesCardProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const source = getSlideSource(link);
@@ -82,4 +82,3 @@ const SlidesCard: React.FC<SlidesCardProps> = ({ title, link }) => {
   );
 };
 
-export default SlidesCard;
