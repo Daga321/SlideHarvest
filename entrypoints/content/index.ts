@@ -4,11 +4,17 @@ import { debounce } from '../../src/utils/Debounce';
 import { sendMessage, listen } from '../../src/utils/Messaging';
 import { MessageType, Message } from '../../Types/Utils/Messages';
 
+/**
+ * Content script for SlideHarvest extension
+ * Detects presentation iframes on web pages and handles communication with the popup
+ */
 // @ts-ignore
 export default defineContentScript({
   matches: ["*://*/*", "file://*/*"],
   main() {
-    // Function to send the current presentation iframes
+    /**
+     * Sends the current presentation iframes data to the popup
+     */
     const sendPresentationIframes = () => {
       const iframesData = getPresentationIframes();
       sendMessage({
@@ -20,7 +26,7 @@ export default defineContentScript({
     // Initial send
     sendPresentationIframes();
 
-    // Setup MutationObserver with debounce
+    // Setup MutationObserver with debounce to detect DOM changes
     const debouncedSend = debounce(sendPresentationIframes, 500);
     const observer = new MutationObserver(debouncedSend);
     observer.observe(document.body, {
@@ -30,21 +36,24 @@ export default defineContentScript({
       characterData: false,
     });
 
-    // Listen for messages to request iframes
+    // Listen for messages requesting iframe data
     const removerRequestIframesListener = listen<void>((msg: Message, sender) => {
       if (msg.type === MessageType.REQUEST_PRESENTATION_IFRAMES) {
         sendPresentationIframes();
       }
     });
 
-    // Listen for focus iframes request
+    // Listen for focus iframe requests
     const removeFocusIframeListener = listen<void>((msg: Message, sender) => {
       if (msg.type === MessageType.FOCUS_IFRAMES) {
         focusIframe(msg.payload);
       }
     });
 
-    // Cleanup function (optional, for when the content script is deactivated)
+    /**
+     * Cleanup function for when the content script is deactivated
+     * Removes observers and listeners to prevent memory leaks
+     */
     return () => {
       observer.disconnect();
       removerRequestIframesListener();

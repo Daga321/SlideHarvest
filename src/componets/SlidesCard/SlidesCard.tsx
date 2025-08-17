@@ -5,7 +5,11 @@ import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
 import { sendMessageToActiveTab } from "../../utils/Messaging";
 import { MessageType } from "../../../Types/Utils/Messages";
 
-// Helper to detect slide source
+/**
+ * Helper function to detect the source platform of a slide presentation URL
+ * @param url - The URL to analyze
+ * @returns The name of the detected platform or "Other" if not recognized
+ */
 function getSlideSource(url: string): string {
   if (url.includes("canva.com")) return "Canva";
   if (url.includes("docs.google.com")) return "Google Slides";
@@ -14,7 +18,14 @@ function getSlideSource(url: string): string {
   return "Other";
 }
 
-
+/**
+ * React component that displays a card for presentation slides with preview and actions
+ * @param props - The component props
+ * @param props.id - Unique identifier for the slide
+ * @param props.title - Title to display on the card
+ * @param props.link - URL link to the presentation
+ * @returns JSX element containing the slides card
+ */
 export default function SlidesCard({ id, title, link }: SlidesCardProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -86,6 +97,10 @@ export default function SlidesCard({ id, title, link }: SlidesCardProps) {
   );
 };
 
+/**
+ * Sends a message to the content script to focus on a specific iframe
+ * @param id - The unique identifier of the iframe to focus
+ */
 function focusIframe(id: string){
   sendMessageToActiveTab({
     type: MessageType.FOCUS_IFRAMES,
@@ -93,6 +108,10 @@ function focusIframe(id: string){
   });
 }
 
+/**
+ * Downloads the presentation as a PDF file
+ * @todo Implement PDF download logic
+ */
 function downloadPDF() {
   // TODO: Implement PDF download logic
 }

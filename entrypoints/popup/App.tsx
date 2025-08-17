@@ -5,6 +5,11 @@ import LoadingSpinner from '../../src/componets/LoadingSpinner/LoadingSpinner';
 import { sendMessageToActiveTab, listen } from '../../src/utils/Messaging';
 import { Message, MessageType } from '../../Types/Utils/Messages';
 
+/**
+ * Main App component for the SlideHarvest extension popup
+ * Manages the display of presentation slides found on the current page
+ * @returns JSX element containing the main application interface
+ */
 export default function App() {
   // useState declarations
   const [iframeUrls, setIframeUrls] = useState<string[][]>([]);
@@ -51,7 +56,12 @@ export default function App() {
   );
 }
 
-// Callback functions and auxiliary functions below App
+/**
+ * Handles incoming messages from the content script
+ * @param message - The message received from the content script
+ * @param setIframeUrls - State setter for iframe URLs array
+ * @param setLoading - State setter for loading state
+ */
 const handleMessage = (
   message: Message<string[][]>, 
   setIframeUrls: React.Dispatch<React.SetStateAction<string[][]>>,
