@@ -2,7 +2,7 @@ import { useState } from "react";
 import { SlidesCardProps } from "../../../Types/components/SlidesCardProps";
 import "./SlidesCard.css";
 import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
-import { sendMessageToActiveTab } from "../../utils/Messaging";
+import { sendMessage, sendMessageToActiveTab } from "../../utils/Messaging";
 import { MessageType } from "../../../Types/Utils/Messages";
 
 /**
@@ -79,7 +79,7 @@ export default function SlidesCard({ id, title, link }: SlidesCardProps) {
       <div className="slides-card__content">
         <button
           className="slides-card__download-btn"
-          onClick={downloadPDF}
+          onClick={() => downloadPDF(link)}
         >
           Download PDF
         </button>
@@ -110,8 +110,11 @@ function focusIframe(id: string){
 
 /**
  * Downloads the presentation as a PDF file
- * @todo Implement PDF download logic
  */
-function downloadPDF() {
-  // TODO: Implement PDF download logic
+function downloadPDF(link: string) {
+  // Send message to background script to start PDF generation
+    sendMessage({
+      type: MessageType.DOWNLOAD_PDF,
+      payload: link
+    });
 }

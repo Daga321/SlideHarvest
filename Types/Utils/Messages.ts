@@ -18,5 +18,7 @@ export enum MessageType {
   /** Message type for requesting presentation iframe data */
   REQUEST_PRESENTATION_IFRAMES = "REQUEST_PRESENTATION_IFRAMES",
   /** Message type for focusing on specific iframes */
-  FOCUS_IFRAMES = "FOCUS_IFRAMES"
+  FOCUS_IFRAMES = "FOCUS_IFRAMES",
+  /** Message type for requesting PDF download */
+  DOWNLOAD_PDF = "DOWNLOAD_PDF"
 }

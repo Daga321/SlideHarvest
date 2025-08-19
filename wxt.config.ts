@@ -6,5 +6,13 @@ export default defineConfig({
   manifest: {
     name: 'SlideHarvest',
     description: 'A web application for downloading embedded slide presentations',
+    permissions: [
+      'popup',
+      'activeTab',
+      'tabs',
+      'downloads',
+      'offscreen',
+      'storage'
+    ]
   }
 });
