@@ -13,6 +13,12 @@ export default defineConfig({
       'downloads',
       'offscreen',
       'storage'
+    ],
+    web_accessible_resources: [
+      {
+        resources: ['offscreen.html'],
+        matches: ['<all_urls>']
+      }
     ]
   }
 });

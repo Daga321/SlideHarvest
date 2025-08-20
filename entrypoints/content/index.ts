@@ -1,5 +1,6 @@
 import { getPresentationIframes } from './fetchIframe';
 import { focusIframe } from './focusIframe';
+import { takeScreenshot } from './takeScreenShot';
 import { debounce } from '../../src/utils/Debounce';
 import { sendMessage, listen } from '../../src/utils/Messaging';
 import { MessageType, Message } from '../../Types/Utils/Messages';
@@ -50,6 +51,14 @@ export default defineContentScript({
       }
     });
 
+    // Listen for screenshot requests
+    const removeScreenshotListener = listen<{slideIndex: number, totalSlides: number}>((msg: Message, sender) => {
+      if (msg.type === MessageType.TAKE_SCREENSHOT) {
+        const { slideIndex, totalSlides } = msg.payload;
+        takeScreenshot(slideIndex, totalSlides);
+      }
+    });
+
     /**
      * Cleanup function for when the content script is deactivated
      * Removes observers and listeners to prevent memory leaks
@@ -58,6 +67,7 @@ export default defineContentScript({
       observer.disconnect();
       removerRequestIframesListener();
       removeFocusIframeListener();
+      removeScreenshotListener();
     };
 
   },
