@@ -16,7 +16,7 @@ export default defineConfig({
     ],
     web_accessible_resources: [
       {
-        resources: ['offscreen.html'],
+        resources: ['offscreen.html', 'offscreen.ts'],
         matches: ['<all_urls>']
       }
     ]

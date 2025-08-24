@@ -30,5 +30,13 @@ export enum MessageType {
   /** Message type for requesting tab capture */
   REQUEST_CAPTURE_TAB = "REQUEST_CAPTURE_TAB",
   /** Message type for tab capture response */
-  CAPTURE_TAB_RESPONSE = "CAPTURE_TAB_RESPONSE"
+  CAPTURE_TAB_RESPONSE = "CAPTURE_TAB_RESPONSE",
+  /** Message type for loading content in offscreen document */
+  LOAD_CONTENT_FOR_SCREENSHOT = "LOAD_CONTENT_FOR_SCREENSHOT",
+  /** Message type for capturing screenshot in offscreen document */
+  CAPTURE_SCREENSHOT = "CAPTURE_SCREENSHOT",
+  /** Message type for offscreen document cleanup */
+  CLEANUP = "CLEANUP",
+  /** Message type for offscreen document ready status */
+  OFFSCREEN_READY = "OFFSCREEN_READY"
 }

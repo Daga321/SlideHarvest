@@ -1,200 +1,123 @@
 import DownloadFile from "../../src/utils/DownloadFile";
 import GeneratePdf from "../../src/utils/GeneratePdf";
-import { listen, sendMessage } from '../../src/utils/Messaging';
-import { Message, MessageType } from '../../Types/Utils/Messages';
-import type { CaptureTabResponse } from '../../Types/Utils/CaptureTabResponse';
-import type { OffscreenDocument } from '../../Types/Utils/OffscreenDocument';
+import type { OffscreenContentConfig } from '../../Types/Utils/OffscreenContentConfig';
+import getOffscreenManager from '../../src/utils/OffscreenManager';
 
-
-export default async function processIframe(): Promise<void> {
-    try {
-        // URL for the iframe to capture
-        const iframeUrl = 'https://www.canva.com/design/DADj-4dm8eI/lqfBhzaWxbygT5b4HvZPGQ/view?embed';
-
-        console.log('Starting iframe processing for URL:', iframeUrl);
-        
-        // Debug: Check what APIs are available
-        console.log('Available APIs:', {
-            chrome: !!(globalThis as any).chrome,
-            browser: !!(globalThis as any).browser,
-            chromeTabs: !!(globalThis as any).chrome?.tabs,
-            browserTabs: !!(globalThis as any).browser?.tabs
-        });
-
-        // Create a visible tab for testing
-        const tab = await createVisibleTab(iframeUrl);
-
-        // Wait for the tab to load
-        await waitForTabToLoad(tab.id);
-
-        // Capture screenshots and convert to blobs
-        const imageBlobs: Blob[] = await captureTabScreenshots(tab.id);
-
-        console.log(`Captured ${imageBlobs.length} images for PDF generation`);
-
-        if (imageBlobs.length === 0) {
-            throw new Error('No images were captured from the tab');
-        }
-
-        // Generate PDF from captured images
-        const pdfArrayBuffer = await GeneratePdf(imageBlobs);
-
-        // Download the generated PDF
-        await DownloadFile(pdfArrayBuffer, 'slides.pdf');
-
-        console.log('PDF generation and download completed successfully');
-
-        // Close the tab after processing
-        await (globalThis as any).browser?.tabs?.remove(tab.id);
-
-    } catch (error) {
-        console.error('Error processing iframe:', error);
-    }
+/**
+ * Configuration interface for screenshot capture process
+ */
+interface ScreenshotProcessConfig {
+    /** Array of content configurations to capture */
+    contentConfig: OffscreenContentConfig;
+    /** Output PDF filename */
+    filename?: string;
+    /** Whether to cleanup resources after completion */
+    autoCleanup?: boolean;
 }
 
-async function createVisibleTab(url: string): Promise<any> {
-    try {
-        console.log('Creating visible tab for URL:', url);
-        
-        // Try chrome API first, then browser API
-        let tabsAPI = (globalThis as any).chrome?.tabs;
-        let apiType = 'chrome';
-        
-        if (!tabsAPI) {
-            tabsAPI = (globalThis as any).browser?.tabs;
-            apiType = 'browser';
+/**
+ * Main class for handling slide screenshot capture and PDF generation
+ * Manages the entire process from content loading to PDF download
+ */
+export class SlideScreenshotProcessor {
+    private offscreenManager = getOffscreenManager();
+    private capturedScreenshots: Blob[] = [];
+    private isProcessing: boolean = false;
+    
+    /**
+     * Process slides by capturing screenshots and generating PDF
+     * @param config - Configuration for the screenshot process
+     */
+    public async processSlides(config: ScreenshotProcessConfig): Promise<void> {
+        if (this.isProcessing) {
+            throw new Error('Screenshot process is already running');
         }
         
-        if (!tabsAPI) {
-            throw new Error('Neither chrome.tabs nor browser.tabs API is available');
-        }
+        this.isProcessing = true;
         
-        console.log(`Using ${apiType} tabs API, creating tab...`);
-        
-        // Wrap in Promise for compatibility
-        const tab = await new Promise((resolve, reject) => {
-            const result = tabsAPI.create({
-                url: url,
-                active: false // Don't focus the tab to avoid interrupting user
-            });
+        try {
+            console.log('Starting slide screenshot process...');
             
-            // Handle both callback and promise styles
-            if (result && typeof result.then === 'function') {
-                result.then(resolve).catch(reject);
-            } else if (result) {
-                resolve(result);
-            } else {
-                // If no result and no promise, it might be callback style
-                setTimeout(() => {
-                    reject(new Error('Tab creation timeout'));
-                }, 5000);
+            // Ensure offscreen document is ready
+            await this.offscreenManager.ensureOffscreenDocument();
+            
+            // Capture screenshots for all configured content
+            console.log(`Capturing screenshot ...`);
+
+            // Load content in offscreen document
+            await this.offscreenManager.loadContentForScreenshot(config.contentConfig);
+            
+            // Capture screenshot
+            const screenshotDataUrl = await this.offscreenManager.captureScreenshot();
+            
+            // Convert to blob and store
+            const screenshotBlob = this.offscreenManager.dataUrlToBlob(screenshotDataUrl);
+            this.capturedScreenshots.push(screenshotBlob);
+            
+            if (this.capturedScreenshots.length === 0) {
+                throw new Error('No screenshots were captured successfully');
             }
-        });
+            
+            console.log(`Successfully captured ${this.capturedScreenshots.length} screenshots`);
+            
+            // Generate PDF from captured screenshots
+            const pdfArrayBuffer = await GeneratePdf(this.capturedScreenshots);
+            
+            // Download the generated PDF
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const filename = config.filename || `slides-${timestamp}.pdf`;
+            await DownloadFile(pdfArrayBuffer, filename);
 
-        if (!tab) {
-            throw new Error('Failed to create tab - no tab returned');
+            console.log('Slide screenshot process completed successfully');
+            
+        } catch (error) {
+            console.error('Error in slide screenshot process:', error);
+            throw error;
+        } finally {
+            this.isProcessing = false;
+            
+            await this.CleanUp();
         }
-
-        console.log('Created tab with ID:', (tab as any).id);
-        return tab;
-        
-    } catch (error) {
-        console.error('Error creating visible tab:', error);
-        throw new Error(`Failed to create tab: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
+
+   public async CleanUp() {
+        await this.offscreenManager.cleanup();
+            this.capturedScreenshots = [];
+    }
+    
 }
 
-async function waitForTabToLoad(tabId: number): Promise<void> {
-    return new Promise((resolve, reject) => {
-        const timeoutId = setTimeout(() => {
-            reject(new Error('Tab loading timeout'));
-        }, 15000); // 15 second timeout
-
-        const checkTabStatus = async () => {
-            try {
-                const tab = await (globalThis as any).browser?.tabs?.get(tabId);
-                
-                if (tab.status === 'complete') {
-                    clearTimeout(timeoutId);
-                    console.log('Tab loaded successfully');
-                    // Wait additional time for content to render
-                    setTimeout(resolve, 3000);
-                } else {
-                    // Check again in 500ms
-                    setTimeout(checkTabStatus, 500);
-                }
-            } catch (error) {
-                clearTimeout(timeoutId);
-                reject(error);
+/**
+ * Legacy function for backward compatibility
+ * Creates a simple screenshot process with a single URL
+ * @param url - URL to capture (optional, for future iframe implementation)
+ */
+export default async function processIframe(url?: string): Promise<void> {
+    const processor = new SlideScreenshotProcessor();
+    
+    // For now, create a simple test configuration
+    // In the future, this will process actual iframe content
+    const testConfig: ScreenshotProcessConfig = {
+        contentConfig: {
+            html: `
+                <div style="width: 100vw; height: 100vh; background: linear-gradient(45deg, #667eea 0%, #764ba2 100%); 
+                        display: flex; justify-content: center; align-items: center; color: white; font-size: 48px; font-family: Arial;">
+                    <div style="text-align: center;">
+                        <h1>SlideHarvest Test</h1>
+                        <p style="font-size: 24px;">Screenshot Capture Working!</p>
+                        <p style="font-size: 18px;">${new Date().toLocaleString()}</p>
+                    </div>
+                </div>
+            `,
+            waitTime: 2000,
+            captureOptions: {
+                format: 'png',
+                quality: 90
             }
-        };
-
-        checkTabStatus();
-    });
+        },
+        filename: 'test-slides.pdf',
+        autoCleanup: true
+    };
+    
+    await processor.processSlides(testConfig);
 }
-
-async function captureTabScreenshots(tabId: number): Promise<Blob[]> {
-    try {
-        console.log('Capturing screenshot for tab ID:', tabId);
-        
-        // Capture the tab
-        const dataUrl = await (globalThis as any).browser?.tabs?.captureTab(tabId, {
-            format: 'png',
-            quality: 90
-        });
-
-        if (!dataUrl) {
-            throw new Error('Failed to capture tab screenshot');
-        }
-
-        console.log('Screenshot captured successfully');
-        
-        // Convert data URL to blob
-        const blob = dataURLToBlob(dataUrl);
-        
-        return [blob];
-        
-    } catch (error) {
-        console.error('Error capturing tab screenshot:', error);
-        throw error;
-    }
-}
-
-// Helper function to convert data URL to Blob
-function dataURLToBlob(dataURL: string): Blob {
-    const base64 = dataURL.split(',')[1];
-    const mimeType = dataURL.split(',')[0].split(':')[1].split(';')[0];
-
-    const byteCharacters = atob(base64);
-    const byteNumbers = new Array(byteCharacters.length);
-
-    for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-
-    const byteArray = new Uint8Array(byteNumbers);
-    return new Blob([byteArray], { type: mimeType });
-}
-
-// OFFSCREEN FUNCTIONS (Commented out for now - using visible tab for testing)
-/*
-async function ensureOffscreenDocument(): Promise<void> {
-    // ... offscreen code
-}
-
-async function captureIframeScreenshots(url: string): Promise<Blob[]> {
-    // ... offscreen code
-}
-
-const removeTabCaptureListener = listen<void>((message: Message<void>) => {
-    // ... offscreen code
-});
-
-async function handleTabCaptureRequest(): Promise<void> {
-    // ... offscreen code
-}
-
-async function captureOffscreenTab(): Promise<string> {
-    // ... offscreen code
-}
-*/

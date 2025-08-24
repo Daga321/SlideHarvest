@@ -38,6 +38,54 @@ export function sendMessageToActiveTab<T>(message: Message<T>): void {
 }
 
 /**
+ * Sends a message to a specific tab
+ * @param tabId - ID of the target tab
+ * @param message - The message to send
+ */
+export function sendMessageToTab<T>(tabId: number, message: Message<T>): void {
+  if (browserAPI?.tabs?.sendMessage) {
+    browserAPI.tabs.sendMessage(tabId, message).catch((error: Error) => {
+      console.warn('Error sending message to tab:', error);
+    });
+  } else {
+    console.warn('Browser API not available for sending messages to tabs');
+  }
+}
+
+/**
+ * Sends a message to offscreen document and waits for response
+ * @param message - The message to send
+ * @param timeout - Timeout in milliseconds (default: 30000)
+ * @returns Promise that resolves to the response
+ */
+export function sendMessageToOffscreen<T, R = any>(
+  message: Message<T>, 
+  timeout: number = 30000
+): Promise<R> {
+  return new Promise((resolve, reject) => {
+    if (!browserAPI?.runtime?.sendMessage) {
+      reject(new Error('Browser API not available for sending messages'));
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      reject(new Error('Offscreen message timeout'));
+    }, timeout);
+
+    browserAPI.runtime.sendMessage(message, (response: R) => {
+      clearTimeout(timeoutId);
+      
+      if (browserAPI.runtime.lastError) {
+        reject(new Error(browserAPI.runtime.lastError.message));
+        return;
+      }
+      
+      resolve(response);
+    });
+  });
+}
+
+/**
  * Listens for incoming messages
  * @param callback - Callback function that executes when a message arrives
  * @returns Function to remove the listener
