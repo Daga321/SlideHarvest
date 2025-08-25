@@ -62,26 +62,45 @@ export function sendMessageToOffscreen<T, R = any>(
   message: Message<T>, 
   timeout: number = 30000
 ): Promise<R> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {  
     if (!browserAPI?.runtime?.sendMessage) {
-      reject(new Error('Browser API not available for sending messages'));
+      const error = new Error('Browser API not available for sending messages');
+      console.error('❌ Browser API check failed:', error);
+      reject(error);
       return;
     }
 
     const timeoutId = setTimeout(() => {
-      reject(new Error('Offscreen message timeout'));
+      const timeoutError = new Error(`Offscreen message timeout after ${timeout}ms for message type: ${message.type}`);
+      console.error('Message timeout:');
+      reject(timeoutError);
     }, timeout);
 
-    browserAPI.runtime.sendMessage(message, (response: R) => {
+    try {
+      browserAPI.runtime.sendMessage(message, (response: R) => {
+        clearTimeout(timeoutId);
+
+        if (browserAPI.runtime.lastError) {
+          const runtimeError = new Error(browserAPI.runtime.lastError.message);
+          console.error('❌ Runtime error in sendMessage:');
+          reject(runtimeError);
+          return;
+        }
+        
+        if (!response) {
+          const noResponseError = new Error(`No response received for message type: ${message.type}`);
+          console.error('❌ No response received:');
+          reject(noResponseError);
+          return;
+        }
+        
+        resolve(response);
+      });
+    } catch (error) {
       clearTimeout(timeoutId);
-      
-      if (browserAPI.runtime.lastError) {
-        reject(new Error(browserAPI.runtime.lastError.message));
-        return;
-      }
-      
-      resolve(response);
-    });
+      console.error('❌ Exception in sendMessage:');
+      reject(error);
+    }
   });
 }
 

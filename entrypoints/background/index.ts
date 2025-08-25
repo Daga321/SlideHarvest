@@ -28,15 +28,8 @@ export default defineBackground(() => {
    * Handle PDF download request (legacy support)
    */
   async function handlePdfDownloadRequest(): Promise<void> {
-    try {
-      console.log('Processing PDF download request...');
-      await processIframe();
-    } catch (error) {
-      console.error('Error processing PDF download:', error);
-    }
+    await processIframe();
   }
-
- 
 
   // Cleanup function
   return () => {

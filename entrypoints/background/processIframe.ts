@@ -11,8 +11,6 @@ interface ScreenshotProcessConfig {
     contentConfig: OffscreenContentConfig;
     /** Output PDF filename */
     filename?: string;
-    /** Whether to cleanup resources after completion */
-    autoCleanup?: boolean;
 }
 
 /**
@@ -38,19 +36,20 @@ export class SlideScreenshotProcessor {
         try {
             console.log('Starting slide screenshot process...');
             
-            // Ensure offscreen document is ready
+            // Step 1: Ensure offscreen document is ready
+            console.log('Initializing offscreen document...');
             await this.offscreenManager.ensureOffscreenDocument();
             
-            // Capture screenshots for all configured content
-            console.log(`Capturing screenshot ...`);
-
-            // Load content in offscreen document
+            // Step 2: Load content in offscreen document
+            console.log('Loading content for screenshot...');
             await this.offscreenManager.loadContentForScreenshot(config.contentConfig);
             
-            // Capture screenshot
+            // Step 3: Capture screenshot
+            console.log('Capturing screenshot...');
             const screenshotDataUrl = await this.offscreenManager.captureScreenshot();
             
-            // Convert to blob and store
+            // Step 4: Convert to blob and store
+            console.log('Converting screenshot to blob...');
             const screenshotBlob = this.offscreenManager.dataUrlToBlob(screenshotDataUrl);
             this.capturedScreenshots.push(screenshotBlob);
             
@@ -60,10 +59,12 @@ export class SlideScreenshotProcessor {
             
             console.log(`Successfully captured ${this.capturedScreenshots.length} screenshots`);
             
-            // Generate PDF from captured screenshots
+            // Step 5: Generate PDF from captured screenshots
+            console.log('Generating PDF from screenshots...');
             const pdfArrayBuffer = await GeneratePdf(this.capturedScreenshots);
             
-            // Download the generated PDF
+            // Step 6: Download the generated PDF
+            console.log('Initiating PDF download...');
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
             const filename = config.filename || `slides-${timestamp}.pdf`;
             await DownloadFile(pdfArrayBuffer, filename);
@@ -72,17 +73,33 @@ export class SlideScreenshotProcessor {
             
         } catch (error) {
             console.error('Error in slide screenshot process:', error);
-            throw error;
+            throw error; // Re-throw the error instead of masking it
         } finally {
             this.isProcessing = false;
             
-            await this.CleanUp();
+            // Always attempt cleanup, but don't mask the original error
+            try {
+                await this.CleanUp();
+            } catch (cleanupError) {
+                console.error('Error during cleanup:', cleanupError);
+                // Don't throw cleanup errors, just log them
+            }
         }
     }
 
-   public async CleanUp() {
-        await this.offscreenManager.cleanup();
+   /**
+    * Clean up resources used during the screenshot process
+    */
+   public async CleanUp(): Promise<void> {
+        try {
+            console.log('Cleaning up screenshot processor resources...');
+            await this.offscreenManager.cleanup();
             this.capturedScreenshots = [];
+            console.log('Screenshot processor cleanup completed');
+        } catch (error) {
+            console.error('Error during screenshot processor cleanup:', error);
+            // Don't throw cleanup errors, just log them
+        }
     }
     
 }
@@ -115,8 +132,7 @@ export default async function processIframe(url?: string): Promise<void> {
                 quality: 90
             }
         },
-        filename: 'test-slides.pdf',
-        autoCleanup: true
+        filename: 'test-slides.pdf'
     };
     
     await processor.processSlides(testConfig);

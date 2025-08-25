@@ -1,6 +1,7 @@
 import { Message, MessageType } from '../../Types/Utils/Messages';
 import { OffscreenResponse } from '../../Types/Utils/OffscreenResponse';
 import { OffscreenContentConfig } from '../../Types/Utils/OffscreenContentConfig';
+import { sendMessageToOffscreen } from './Messaging';
 
 // Browser API compatibility
 const browserAPI = globalThis.browser || (globalThis as any).chrome;
@@ -56,11 +57,12 @@ export class OffscreenDocumentManager {
             this.isOffscreenDocumentCreated = true;
             console.log('Offscreen document created successfully');
             
-            // Wait a moment for the document to initialize
+            // Wait for the document to initialize and be ready
             await this.waitForOffscreenReady();
             
         } catch (error) {
             console.error('Error creating offscreen document:', error);
+            this.isOffscreenDocumentCreated = false;
             throw new Error(`Failed to create offscreen document: ${error}`);
         }
     }
@@ -88,11 +90,14 @@ export class OffscreenDocumentManager {
             payload: config
         };
         
-        const response = await this.sendMessageToOffscreen<OffscreenResponse>(message);
+        console.log('Sending LOAD_CONTENT_FOR_SCREENSHOT message...');
+        const response = await sendMessageToOffscreen<OffscreenContentConfig, OffscreenResponse>(message);
         
         if (!response.success) {
             throw new Error(`Failed to load content: ${response.error}`);
         }
+        
+        console.log('Content loaded successfully in offscreen document');
     }
     
     /**
@@ -105,13 +110,15 @@ export class OffscreenDocumentManager {
         const message: Message = {
             type: MessageType.CAPTURE_SCREENSHOT
         };
-        
-        const response = await this.sendMessageToOffscreen<OffscreenResponse>(message);
-        
+
+        console.log('Sending CAPTURE_SCREENSHOT message...');
+        const response = await sendMessageToOffscreen<any, OffscreenResponse>(message);
+
         if (!response.success) {
             throw new Error(`Failed to capture screenshot: ${response.error}`);
         }
         
+        console.log('Screenshot captured successfully from offscreen document');
         return response.data;
     }
     
@@ -153,30 +160,6 @@ export class OffscreenDocumentManager {
     }
     
     /**
-     * Send message to offscreen document and wait for response
-     * @param message - Message to send
-     * @returns Promise that resolves to response
-     */
-    private async sendMessageToOffscreen<T>(message: Message): Promise<T> {
-        return new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => {
-                reject(new Error('Offscreen message timeout'));
-            }, 30000); // 30 second timeout
-            
-            browserAPI.runtime.sendMessage(message, (response: T) => {
-                clearTimeout(timeout);
-                
-                if (browserAPI.runtime.lastError) {
-                    reject(new Error(browserAPI.runtime.lastError.message));
-                    return;
-                }
-                
-                resolve(response);
-            });
-        });
-    }
-    
-    /**
      * Cleanup offscreen document
      */
     public async cleanup(): Promise<void> {
@@ -185,13 +168,18 @@ export class OffscreenDocumentManager {
                 return;
             }
             
-            // Send cleanup message
+            // Send cleanup message (with shorter timeout since we're closing anyway)
             const message: Message = {
                 type: MessageType.CLEANUP
             };
-            
-            await this.sendMessageToOffscreen<OffscreenResponse>(message);
-            
+
+            try {
+                console.log('Sending cleanup message to offscreen document...');
+                await sendMessageToOffscreen<any, OffscreenResponse>(message, 5000); // 5 second timeout
+            } catch (error) {
+                console.warn('Failed to send cleanup message (document may already be closed):', (error as Error).message);
+            }
+
             // Close offscreen document
             await browserAPI.offscreen.closeDocument();
             this.isOffscreenDocumentCreated = false;
