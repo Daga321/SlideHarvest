@@ -65,7 +65,7 @@ export function sendMessageToOffscreen<T, R = any>(
   return new Promise((resolve, reject) => {  
     if (!browserAPI?.runtime?.sendMessage) {
       const error = new Error('Browser API not available for sending messages');
-      console.error('❌ Browser API check failed:', error);
+      console.error('Browser API check failed:', error);
       reject(error);
       return;
     }
@@ -82,14 +82,14 @@ export function sendMessageToOffscreen<T, R = any>(
 
         if (browserAPI.runtime.lastError) {
           const runtimeError = new Error(browserAPI.runtime.lastError.message);
-          console.error('❌ Runtime error in sendMessage:');
+          console.error('Runtime error in sendMessage:');
           reject(runtimeError);
           return;
         }
         
         if (!response) {
           const noResponseError = new Error(`No response received for message type: ${message.type}`);
-          console.error('❌ No response received:');
+          console.error('No response received:');
           reject(noResponseError);
           return;
         }
@@ -98,7 +98,7 @@ export function sendMessageToOffscreen<T, R = any>(
       });
     } catch (error) {
       clearTimeout(timeoutId);
-      console.error('❌ Exception in sendMessage:');
+      console.error('Exception in sendMessage:');
       reject(error);
     }
   });
